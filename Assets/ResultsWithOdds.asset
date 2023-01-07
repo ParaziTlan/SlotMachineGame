@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb9e4960c84ff0146af833482499e64a, type: 3}
+  m_Name: ResultsWithOdds
+  m_EditorClassIdentifier: 
+  resultsWithOddsList:
+  - column1: 3
+    column2: 1
+    column3: 2
+    hundredPercentage: 13
+  - column1: 1
+    column2: 1
+    column3: 4
+    hundredPercentage: 13
+  - column1: 0
+    column2: 0
+    column3: 3
+    hundredPercentage: 13
+  - column1: 1
+    column2: 2
+    column3: 3
+    hundredPercentage: 13
+  - column1: 2
+    column2: 3
+    column3: 0
+    hundredPercentage: 13
+  - column1: 3
+    column2: 3
+    column3: 3
+    hundredPercentage: 9
+  - column1: 2
+    column2: 2
+    column3: 2
+    hundredPercentage: 8
+  - column1: 4
+    column2: 4
+    column3: 4
+    hundredPercentage: 7
+  - column1: 1
+    column2: 1
+    column3: 1
+    hundredPercentage: 6
+  - column1: 0
+    column2: 0
+    column3: 0
+    hundredPercentage: 5
