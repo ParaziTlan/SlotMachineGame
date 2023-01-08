@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Testor : MonoBehaviour
 {
-
     public Result[] results;
     public ResultOddsScriptable resultOddsScriptable;
 
@@ -12,6 +9,5 @@ public class Testor : MonoBehaviour
     {
         results = ResultsCreator.CreateResults(resultOddsScriptable.resultsWithOddsList);
     }
-
 
 }

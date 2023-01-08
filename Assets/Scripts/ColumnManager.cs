@@ -5,7 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public enum SlotObjectTypes
 {
-    Empty = -1, // For both filling algorithm and Unit Tests
     Jackpot,
     Wild,
     Bonus,
@@ -13,7 +12,6 @@ public enum SlotObjectTypes
     Seven
 }
 
-//[System.Serializable]
 public class SlotPiece
 {
     public readonly SlotObjectTypes type;
@@ -21,8 +19,6 @@ public class SlotPiece
     {
         this.type = type;
     }
-
-
 }
 
 public class Column
@@ -40,7 +36,6 @@ public class Column
     {
 
     }
-
 
 
 }

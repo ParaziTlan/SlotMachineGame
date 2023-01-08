@@ -6705,6 +6705,7 @@ MonoBehaviour:
   results: []
   resultOddsScriptable: {fileID: 11400000, guid: 9a72d806e9e84454699a1c508955a125,
     type: 2}
+  counters: []
 --- !u!4 &2065993420
 Transform:
   m_ObjectHideFlags: 0
