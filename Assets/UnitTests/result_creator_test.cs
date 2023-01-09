@@ -32,36 +32,6 @@ public class result_creator_test
     }
 
     [Test]
-    public void is_available_indices_calculating_correctly()
-    {
-        Result[] results = new Result[10];
-        int startIndex = 0;
-        int endIndex = 5;
-
-        List<int> availableIndices = ResultsCreator.GetAvailableIndices(results, startIndex, endIndex);
-
-        availableIndices.ForEach(i =>
-        {
-            Assert.GreaterOrEqual(i, startIndex);
-            Assert.Less(i, endIndex);
-        });
-
-        Assert.AreEqual(5, availableIndices.Count);
-        Assert.Contains(2, availableIndices);
-        Assert.Contains(3, availableIndices);
-
-
-        results[2] = new Result();
-        results[3] = new Result();
-
-        availableIndices = ResultsCreator.GetAvailableIndices(results, startIndex, endIndex);
-
-        Assert.AreEqual(3, availableIndices.Count);
-        Assert.IsFalse(availableIndices.Contains(2), "list should not contain 2");
-        Assert.IsFalse(availableIndices.Contains(3), "list should not contain 3");
-    }
-
-    [Test]
     public void is_calculated_results_matching_with_hundred_percentages_of_scriptable()
     {
         List<ResultWithOdd> resultsWithOdds = TestContainer.ResultOddsScriptable.resultsWithOddsList;

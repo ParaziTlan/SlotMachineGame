@@ -17,6 +17,17 @@ public class GameManager : Singleton<GameManager>
     private GameStates state = GameStates.Initializing;
     public bool IsWaitingForInput => state == GameStates.WaitingForInput;
 
+    public ResultOddsScriptable resultOddScriptable;
+
+    private void OnEnable()
+    {
+        UIManager.OnPlayerTappedSpinButton += OnPlayerTappedSpinButton;
+    }
+    private void OnDisable()
+    {
+        UIManager.OnPlayerTappedSpinButton -= OnPlayerTappedSpinButton;
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -47,10 +58,10 @@ public class GameManager : Singleton<GameManager>
 
     public void StartPlaying()
     {
-        SetState(GameStates.WaitingForInput);
+        state = GameStates.WaitingForInput;
     }
 
-    public void StartSpinning()
+    private void StartSpinning()
     {
         SetState(GameStates.Spinning);
     }
@@ -60,5 +71,9 @@ public class GameManager : Singleton<GameManager>
         SetState(GameStates.WaitingForInput);
     }
 
+    private void OnPlayerTappedSpinButton()
+    {
+        StartSpinning();
+    }
 
 }

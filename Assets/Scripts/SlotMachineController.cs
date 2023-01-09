@@ -1,167 +1,38 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
-
-
-
-[System.Serializable]
-public enum SlotObjectTypes
-{
-    Jackpot,
-    Wild,
-    Bonus,
-    A,
-    Seven
-}
-
-public struct SlotPiecePositionAndIndex
-{
-    public float Position;
-    public int Index;
-
-    public SlotPiecePositionAndIndex(float Position, int Index)
-    {
-        this.Position = Position;
-        this.Index = Index;
-    }
-}
-
-public class SlotPiece
-{
-    public readonly SlotObjectTypes type;
-    public readonly float distanceYBetween2Rows;
-    public readonly int allSlotPiecesIndex;
-
-    private readonly float topYPos = 6;
-    private readonly float bottomYPos;
-    private readonly int slotPieceCount = Enum.GetNames(typeof(SlotObjectTypes)).Length;
-
-    private float posY;
-
-    public SlotPiece(SlotObjectTypes type, float distanceYBetween2Rows, int allSlotPiecesIndex)
-    {
-        this.type = type;
-        this.distanceYBetween2Rows = distanceYBetween2Rows;
-        posY = (int)type * -distanceYBetween2Rows;
-        this.allSlotPiecesIndex = allSlotPiecesIndex;
-        bottomYPos = topYPos - slotPieceCount * distanceYBetween2Rows;
-    }
-
-    public SlotPiecePositionAndIndex Tick(float speedInDeltaTime) // -4 olan 6 ya ışınlanmalı 
-    {
-        posY -= speedInDeltaTime;
-        if (posY < bottomYPos) posY += distanceYBetween2Rows * slotPieceCount;
-
-        return new SlotPiecePositionAndIndex(posY, allSlotPiecesIndex);
-    }
-}
-
-[Serializable]
-public class Column
-{
-    public readonly int columnIndex;
-    public readonly SlotPiece[] slotPieces;
-
-    public float speed = 0;
-
-    private float pos = 0;
-    public float GetPos => pos;
-
-
-    private readonly float topYPos = 6;
-    private readonly float bottomYPos;
-    private readonly float distanceYBetween2Rows;
-
-    public Column(int columnIndex, int slotPiecesCount, float distanceYBetween2Rows)
-    {
-        this.columnIndex = columnIndex;
-        slotPieces = GetSlotPieces(slotPiecesCount, distanceYBetween2Rows, columnIndex);
-        this.distanceYBetween2Rows = distanceYBetween2Rows;
-        bottomYPos = topYPos - slotPieces.Length * distanceYBetween2Rows;
-    }
-
-    private SlotPiece[] GetSlotPieces(int slotPiecesCount, float distanceYBetween2Rows, int columnIndex)  //TODO Move it to the PlayModeExtensions
-    {
-        SlotPiece[] slotPieces = new SlotPiece[slotPiecesCount];
-        for (int i = 0; i < slotPiecesCount; i++)
-        {
-            slotPieces[i] = new SlotPiece((SlotObjectTypes)i, distanceYBetween2Rows, columnIndex * slotPiecesCount + i);
-        }
-        return slotPieces;
-    }
-
-    public SlotPiecePositionAndIndex[] Tick(float deltaTime)
-    {
-        float speedInTimeDeltaTime = deltaTime * speed;
-
-        pos -= speedInTimeDeltaTime;
-        if (pos < bottomYPos) pos += slotPieces.Length * distanceYBetween2Rows;
-
-
-        SlotPiecePositionAndIndex[] slotPosAndIndicesArray = new SlotPiecePositionAndIndex[slotPieces.Length];
-        for (int i = 0; i < slotPieces.Length; i++)
-        {
-            slotPosAndIndicesArray[i] = slotPieces[i].Tick(speedInTimeDeltaTime);
-        }
-        return slotPosAndIndicesArray;
-    }
-
-}
 
 public class SlotMachineController : MonoBehaviour
 {
     [SerializeField]
     private Renderer genericSlotPiecePrefab;
 
+    [Header("---Slot Machine Settings---")]
+    [Space]
     [SerializeField]
-    private float columnStartingPosX = -2.5f, distanceXBetween2Columns = 2.5f, distanceYBetween2Rows = 2f;
+    private float columnStartingPosX = -2.5f;
+    [SerializeField]
+    private float distanceXBetween2Columns = 2.5f, distanceYBetween2Rows = 2f, maxBlurSpeed = 5f, maxBlurAmountAtFullSpeed = 0.4f;
 
+    [Header("---Animation Time Settings---")]
+    [Space]
     [SerializeField]
-    private int columnAmount = 3;
+    private float[] startingWaitDelayTimes;
+    [SerializeField]
+    private float spinningLoopTime = 1f, fastStoppingTime = 0.1f, normalStoppingTime = 1f, slowStoppingTime = 2.25f;
+
 
     private Column[] columnsArray;
-
     private Renderer[] slotPieceRenderers;
-
-    [SerializeField] private float maxSpeed = 10f;
-
-    private float time = 0;
     private bool isSpinning = false;
-    private float delayForStartSpinningTime = 0.05f;
-    //private float timeForMaxSpeed = 0.5f;
-    private float fastStoppingTime = 0.1f;
-    private float normalStoppingTime = 1f;
-    private float slowStoppingTime = 2.25f;
 
-    private float spinningLoopTime = 1f;
-
-    private float calcAccel1;
-    private float calcAccel2;
-    private float calcAccel3;
-
-    private float deltaTimeBefore;
-
-    private enum AnimationState
-    {
-        NoSpin,
-        StartingToSpinning,
-        WaitingAllOfThemToMaxSpeed,
-        SpinningLoopTime,
-        Stopping
-    }
-
-    private AnimationState currentAnimationState;
-
-    private void ChangeAnimationState(AnimationState toState)
-    {
-        currentAnimationState = toState;
-        time = 0;
-    }
-
-    private void Animate()
-    {
-       
-    }
-
+    private static WaitForSeconds waitForAccelerationTime = new WaitForSeconds(0.5f);  // acceleration Time is constant 0.5 second 
+    private static WaitForSeconds[] waitForStartingDelayTimeArray;
+    private static WaitForSeconds waitForloopTime;
+    private static WaitForSeconds waitForFastStoppingTime;
+    private static WaitForSeconds waitForNormalStoppingTime;
+    private static WaitForSeconds waitForSlowStoppingTime;
+    private static WaitForSeconds waitForNextSpinDelay = new WaitForSeconds(0.2f); // I added a little delay for halt players action to make them see coin particles etc...
 
     private void OnEnable()
     {
@@ -172,52 +43,61 @@ public class SlotMachineController : MonoBehaviour
         GameManager.Instance.OnSpinStarted -= OnSpinStarted;
     }
 
-    private void OnSpinStarted()
-    {
-        isSpinning = true;
-        ChangeAnimationState(AnimationState.StartingToSpinning);
-
-    }
-
     private void Start()
     {
         CreateColumns();
+
+        waitForStartingDelayTimeArray = new WaitForSeconds[startingWaitDelayTimes.Length];
+        for (int i = 0; i < startingWaitDelayTimes.Length; i++)
+        {
+            waitForStartingDelayTimeArray[i] = new WaitForSeconds(startingWaitDelayTimes[i]);
+        }
+        waitForloopTime = new WaitForSeconds(spinningLoopTime);
+        waitForFastStoppingTime = new WaitForSeconds(fastStoppingTime);
+        waitForNormalStoppingTime = new WaitForSeconds(normalStoppingTime);
+        waitForSlowStoppingTime = new WaitForSeconds(slowStoppingTime);
+
+        GameManager.Instance.StartPlaying();
     }
 
     private void CreateColumns()
     {
         int slotPieceCount = Enum.GetNames(typeof(SlotObjectTypes)).Length;
-
-        slotPieceRenderers = new Renderer[slotPieceCount * columnAmount];
-
-        columnsArray = new Column[columnAmount];
-        for (int i = 0; i < columnAmount; i++)
+        slotPieceRenderers = new Renderer[slotPieceCount * 3];
+        columnsArray = new Column[3];
+        for (int i = 0; i < 3; i++)
         {
-            Transform columnObject = new GameObject("Column_" + i).transform;
-            columnObject.SetParent(transform);
-            for (int k = 0; k < slotPieceCount; k++)
+            Transform columnTransform = new GameObject("Column_" + i).transform; // Creating dummy columnTransform just for hierarchy order
+            columnTransform.SetParent(transform);
+            for (int k = 0; k < slotPieceCount; k++) // Creating slotPieceRenders with prefab just for updating player's view
             {
                 Renderer createdRenderer = Instantiate(genericSlotPiecePrefab);
                 createdRenderer.SetSlotImageIndex(k);
                 createdRenderer.name = ((SlotObjectTypes)k).ToString();
                 createdRenderer.transform.position = new Vector3(columnStartingPosX + i * distanceXBetween2Columns, k * distanceYBetween2Rows, createdRenderer.transform.position.z);
-                createdRenderer.transform.SetParent(columnObject);
+                createdRenderer.transform.SetParent(columnTransform);
                 slotPieceRenderers[i * slotPieceCount + k] = createdRenderer;
             }
 
-            columnsArray[i] = new Column(i, slotPieceCount, distanceYBetween2Rows);
+            columnsArray[i] = new Column(i, slotPieceCount, distanceYBetween2Rows, (int)SaveLoadManager.GetCachedProgressData.lastResult.GetSlotPieceTypeWithIndex(i)); //Creating actual column and column creates actual slotpieces
         }
+        Tick(0); // Updating player's view with starting parameters
     }
 
     private void Update()
     {
-        Animate();
-
-        float deltaTime = Time.deltaTime;
-        for (int i = 0; i < columnAmount; i++)
+        if (isSpinning)
         {
-            float normalizedSpeed = columnsArray[i].speed.Remap(0, maxSpeed, 0, 1);
-            SlotPiecePositionAndIndex[] columnsPiecesPositionAndIndices = columnsArray[i].Tick(deltaTime);
+            Tick(Time.deltaTime);
+        }
+    }
+
+    private void Tick(float deltaTime) // Updating columns with deltaTime, columns updates slotPieces, then it returns SlotPiecePositionAndIndex for updating player's view.
+    {
+        for (int i = 0; i < 3; i++) //For every column
+        {
+            float normalizedSpeed = Mathf.Abs(columnsArray[i].GetSpeed).Remap(0, maxBlurSpeed, 0, maxBlurAmountAtFullSpeed);
+            SlotPiecePositionAndIndex[] columnsPiecesPositionAndIndices = columnsArray[i].Tick(deltaTime); // Column returns its slotPieces' positions and UniqueIndices for view part
             for (int k = 0; k < columnsPiecesPositionAndIndices.Length; k++)
             {
                 slotPieceRenderers[columnsPiecesPositionAndIndices[k].Index].transform.position = new Vector3(slotPieceRenderers[columnsPiecesPositionAndIndices[k].Index].transform.position.x,
@@ -226,34 +106,54 @@ public class SlotMachineController : MonoBehaviour
                 slotPieceRenderers[columnsPiecesPositionAndIndices[k].Index].UpdateSlotBlurAmount(normalizedSpeed);
             }
         }
+    }
 
-        if (Input.GetKey(KeyCode.Y))
-        {
-            columnsArray[0].speed += Time.deltaTime * maxSpeed;
-        }
-        if (Input.GetKey(KeyCode.H))
-        {
-            columnsArray[0].speed -= Time.deltaTime * maxSpeed;
-        }
+    private void OnSpinStarted()
+    {
+        isSpinning = true;
 
-        if (Input.GetKey(KeyCode.U))
-        {
-            columnsArray[1].speed += Time.deltaTime * maxSpeed;
-        }
-        if (Input.GetKey(KeyCode.J))
-        {
-            columnsArray[1].speed -= Time.deltaTime * maxSpeed;
-        }
+        StartCoroutine(SpinSequence(SaveLoadManager.GetNextResult()));
+    }
 
-        if (Input.GetKey(KeyCode.I))
+    IEnumerator SpinSequence(Result result)
+    {
+        //Start Spinning with random delays
+        for (int i = 0; i < columnsArray.Length; i++)
         {
-            columnsArray[2].speed += Time.deltaTime * maxSpeed;
+            if (i != 0)
+                yield return waitForStartingDelayTimeArray[UnityEngine.Random.Range(0, waitForStartingDelayTimeArray.Length)];
+            columnsArray[i].StartSpinning();
         }
-        if (Input.GetKey(KeyCode.K))
-        {
-            columnsArray[2].speed -= Time.deltaTime * maxSpeed;
-        }
+        yield return waitForAccelerationTime;
 
+        //Wait For LoopTime
+        yield return waitForloopTime;
+
+        //Set fastStopping animation parameters for default
+        WaitForSeconds waitAfterStoppingTime = waitForFastStoppingTime;
+        float stoppingTime = fastStoppingTime;
+
+        //Stop Spinning with random delays
+        for (int i = 0; i < columnsArray.Length; i++)
+        {
+            if (i != 0)
+                yield return waitForStartingDelayTimeArray[UnityEngine.Random.Range(0, waitForStartingDelayTimeArray.Length)];
+
+            //If we are at last column and first two columns are same .... Setting custom parameters for last column
+            if (i == columnsArray.Length - 1 & result.column1 == result.column2)
+            {
+                bool isSlow = UnityEngine.Random.value > 0.5f;
+                stoppingTime = isSlow ? slowStoppingTime : normalStoppingTime;
+                waitAfterStoppingTime = isSlow ? waitForSlowStoppingTime : waitForNormalStoppingTime;
+            }
+            columnsArray[i].Stop(stoppingTime, (int)result.GetSlotPieceTypeWithIndex(i)); // Telling column to stop at which slotPiece at how many seconds later
+        }
+        yield return waitAfterStoppingTime; //waiting for stopping animation
+
+        yield return waitForNextSpinDelay; //(This is not necessary) waiting littleDelay for if there is particles playing
+
+        isSpinning = false;
+        GameManager.Instance.SpinningFinished();
     }
 
 }

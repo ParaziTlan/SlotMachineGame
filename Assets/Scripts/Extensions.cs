@@ -55,4 +55,43 @@ public static class Extensions
         }
     }
 
+    public static int GetCoinOfResult(Result result)
+    {
+        int coin = 0;
+
+        if (result.column1 == result.column2 & result.column1 == result.column3)
+        {
+            for (int i = 0; i < Enum.GetNames(typeof(SlotObjectTypes)).Length; i++)
+            {
+                if (result.column1 == (SlotObjectTypes)i)
+                {
+                    coin = SlotObjectTypeToCoinAmount(result.column1);
+                    break;
+                }
+            }
+        }
+
+        return coin;
+    }
+
+    public static int SlotObjectTypeToCoinAmount(SlotObjectTypes rewardedSlotType)
+    {
+        switch (rewardedSlotType)
+        {
+            case SlotObjectTypes.Jackpot:
+                return 50;
+            case SlotObjectTypes.Wild:
+                return 30;
+            case SlotObjectTypes.Seven:
+                return 20;
+            case SlotObjectTypes.Bonus:
+                return 10;
+            case SlotObjectTypes.A:
+                return 5;
+        }
+
+        Debug.LogError("Not Implemented Coin : " + rewardedSlotType);
+        return 0;
+    }
+
 }
