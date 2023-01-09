@@ -110,12 +110,15 @@ public class ResultsCreator
 
     public static Result[] CreateResults(List<ResultWithOdd> resultWithOdds, int resultAmount = 100)
     {
+        //UnityEngine.Random.seed = 29;
+
+
         Result[] calculatedResults = new Result[resultAmount];
 
         List<PeriodWithResult> openPeriodWithResults = new List<PeriodWithResult>();
         for (int i = 0; i < resultWithOdds.Count; i++)
         {
-            Period[] periods = ResultsCreator.GetPeriods(100, resultWithOdds[i].hundredPercentage);
+            Period[] periods = ResultsCreator.GetPeriods(resultAmount, resultWithOdds[i].hundredPercentage);
             for (int k = 0; k < periods.Length; k++)
             {
                 openPeriodWithResults.Add(new PeriodWithResult(periods[k], resultWithOdds[i]));
@@ -124,24 +127,42 @@ public class ResultsCreator
 
         for (int i = 0; i < calculatedResults.Length; i++)
         {
-            List<PeriodWithResult> openedPeriodsWithResultOnCurrentIndex = ResultsCreator.GetOpenedPeriodWithResultsInRangeOfIndex(i, openPeriodWithResults);
-            List<PeriodWithResult> openedPeriodsWithResultsWithTheSameEndIndex = ResultsCreator.GetPeriodsWithResultsWithTheSameEndIndex(openedPeriodsWithResultOnCurrentIndex);
-            PeriodWithResult periodsWithResultWithTheSameIndex = ResultsCreator.GetPeriodsWithResultWithTheSameIndex(openedPeriodsWithResultOnCurrentIndex, i);
+            List<PeriodWithResult> openedPeriodsWithResultOnCurrentIndexList = ResultsCreator.GetOpenedPeriodWithResultsInRangeOfIndex(i, openPeriodWithResults);
+            List<PeriodWithResult> openedPeriodsWithResultsWithTheSameEndIndexList = ResultsCreator.GetPeriodsWithResultsWithTheSameEndIndex(openedPeriodsWithResultOnCurrentIndexList);
+            PeriodWithResult periodsWithResultWithTheSameIndex = ResultsCreator.GetPeriodsWithResultWithTheSameIndex(openedPeriodsWithResultOnCurrentIndexList, i);
+
+            if (openedPeriodsWithResultOnCurrentIndexList.Count == 0) // Sometimes openedPeriodsWithResultOnCurrentIndexList list will be empty, so it is a trashy-fix :( I do not have enough time for now so : TODO
+            {
+                return CreateResults(resultWithOdds, resultAmount);
+            }
+
 
             if (periodsWithResultWithTheSameIndex != null) // we are at the index of some openedPeriodsEndIndex
             {
                 calculatedResults[i] = periodsWithResultWithTheSameIndex.result;
                 openPeriodWithResults.Remove(periodsWithResultWithTheSameIndex);
             }
-            else if (openedPeriodsWithResultsWithTheSameEndIndex.Count > 1 & openedPeriodsWithResultsWithTheSameEndIndex[0].endIndex - i <= openedPeriodsWithResultsWithTheSameEndIndex.Count) // we have x amount of openedPeriods With the same endIndex and current index is less or equal to x
+            else if (openedPeriodsWithResultsWithTheSameEndIndexList.Count > 1) // we have x amount of openedPeriods With the same endIndex and current index is less or equal to x
             {
-                PeriodWithResult choosedPeriodWithResult = openedPeriodsWithResultsWithTheSameEndIndex[UnityEngine.Random.Range(0, openedPeriodsWithResultsWithTheSameEndIndex.Count)];
-                calculatedResults[i] = choosedPeriodWithResult.result;
-                openPeriodWithResults.Remove(choosedPeriodWithResult);
+                if (openedPeriodsWithResultsWithTheSameEndIndexList[0].endIndex - i <= openedPeriodsWithResultsWithTheSameEndIndexList.Count)
+                {
+                    PeriodWithResult choosedPeriodWithResult = openedPeriodsWithResultsWithTheSameEndIndexList[UnityEngine.Random.Range(0, openedPeriodsWithResultsWithTheSameEndIndexList.Count)];
+                    calculatedResults[i] = choosedPeriodWithResult.result;
+                    openPeriodWithResults.Remove(choosedPeriodWithResult);
+                }
+                else // TOTAL RANDOM
+                {
+                    //Debug.Log("FALANS"); 
+                    // Debug.Log(i + "   " + openedPeriodsWithResultOnCurrentIndexList.Count);
+                    PeriodWithResult choosedPeriodWithResult = openedPeriodsWithResultOnCurrentIndexList[UnityEngine.Random.Range(0, openedPeriodsWithResultOnCurrentIndexList.Count)];
+                    calculatedResults[i] = choosedPeriodWithResult.result;
+                    openPeriodWithResults.Remove(choosedPeriodWithResult);
+                }
             }
             else // TOTAL RANDOM
             {
-                PeriodWithResult choosedPeriodWithResult = openedPeriodsWithResultOnCurrentIndex[UnityEngine.Random.Range(0, openedPeriodsWithResultOnCurrentIndex.Count)];
+                //Debug.Log(i + "   " + openedPeriodsWithResultOnCurrentIndexList.Count);
+                PeriodWithResult choosedPeriodWithResult = openedPeriodsWithResultOnCurrentIndexList[UnityEngine.Random.Range(0, openedPeriodsWithResultOnCurrentIndexList.Count)];
                 calculatedResults[i] = choosedPeriodWithResult.result;
                 openPeriodWithResults.Remove(choosedPeriodWithResult);
             }

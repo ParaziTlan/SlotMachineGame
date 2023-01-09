@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 public class result_creator_test
@@ -80,23 +81,26 @@ public class result_creator_test
     [Test]
     public void is_calculated_results_matching_with_periods()
     {
-        List<ResultWithOdd> resultsWithOdds = TestContainer.ResultOddsScriptable.resultsWithOddsList;
-        List<Result> calculatedResults = ResultsCreator.CreateResults(resultsWithOdds).ToList();
-
-        foreach (ResultWithOdd currentResultWithOdd in resultsWithOdds)
+        for (int k = 0; k < 1000; k++)
         {
-            Period[] periods = ResultsCreator.GetPeriods(100, currentResultWithOdd.hundredPercentage);
-            foreach (Period currentPeriod in periods)
+            List<ResultWithOdd> resultsWithOdds = TestContainer.ResultOddsScriptable.resultsWithOddsList;
+            List<Result> calculatedResults = ResultsCreator.CreateResults(resultsWithOdds, 100).ToList();
+
+            foreach (ResultWithOdd currentResultWithOdd in resultsWithOdds)
             {
-                int counter = 0;
-                for (int i = currentPeriod.startIndex; i < currentPeriod.endIndex; i++)
+                Period[] periods = ResultsCreator.GetPeriods(100, currentResultWithOdd.hundredPercentage);
+                foreach (Period currentPeriod in periods)
                 {
-                    if (calculatedResults[i] == currentResultWithOdd)
+                    int counter = 0;
+                    for (int i = currentPeriod.startIndex; i < currentPeriod.endIndex; i++)
                     {
-                        counter++;
+                        if (calculatedResults[i] == currentResultWithOdd)
+                        {
+                            counter++;
+                        }
                     }
+                    Assert.AreEqual(1, counter);
                 }
-                Assert.AreEqual(1, counter);
             }
         }
     }

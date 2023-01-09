@@ -8,8 +8,8 @@
 		_VisibleUnder("Max Y Position For Rendering Slot Pieces", Float) = 2.376
 		_VisibleAbove("Min Y Position For Rendering Slot Pieces", Float) = -2.466
 
-		[HideInInspector] _SlotMachineEnabled("Is Slot Window Enabled", Float) = 0
-		[HideInInspector] _ImageIndex("Image Index", int) = 14
+		[HideInInspector] _SlotMachineEnabled("Is Slot Window Enabled", Float) = 1
+		[HideInInspector] _ImageIndex("Image Index", int) = 8
 		[HideInInspector] _BlurSize("Blur Amount", Float) = 0.5
 	}
 

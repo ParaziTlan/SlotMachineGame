@@ -83,7 +83,7 @@ Material:
     - _OutlineSize: 1
     - _Parallax: 0.02
     - _SlotBackEnabled: 0
-    - _SlotMachineEnabled: 0
+    - _SlotMachineEnabled: 1
     - _SlotWindowEnabled: 0
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
